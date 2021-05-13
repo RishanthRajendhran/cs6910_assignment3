@@ -1,0 +1,14 @@
+dakshina_dataset_v1.0
+ecnoderInputs.npy
+decoderData.npy
+wandb
+attentionModel/
+bestModel/
+bestModelWithAttention/
+dataFiles.npz
+inputTokens.npy
+numDecoderTokens.txt
+numEncoderTokens.txt
+targetTokens.npy 
+128_2_2_256_gru_0.5_tanh_tanh/
+bestModel33/
