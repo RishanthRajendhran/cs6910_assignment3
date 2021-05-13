@@ -1,5 +1,6 @@
 # cs6910_assignment3
-<h1>CS6910 Assignment 2</h1>
+<h1>CS6910 Assignment 3</h1>
+<h1>Recurrent Neural Network based seq2seq model for transliteration task</h1>
 <h3>Team Members</h3>
   <ol>
     <li><strong>Rishanth. R</strong> (CS18B044)</li> 
@@ -66,6 +67,10 @@
     Note that these models might not be the best possible models. The best version of the last trained model is stored in these folders. 
   </li>
  </ul>
+ <p>
+    <b>Note:</b><br/>
+    If there are files in the folder but not mentioned above, ignore them.
+ </p>
 <h3>Running the code</h3>
   <h5>Train and evaluate a recurrent neural network based seq2seq model for transliteration task</h5>
   <p>
@@ -75,6 +80,7 @@
     The code initialises a convolutional neural network with the specified hyperparameters, and then trains the RNN over the training dataset. The best version of the current model is stored in aforementioned folders.<br/>
     Note: Use appropriate flags while running this file <br/>
     To evaluate the program over the test dataset, run the command 'python3 test.py -loadModel'.<br/>
+    <h5>Visualise the attention weights for a recurrent neural network  with attention based seq2seq model for transliteration task</h5>
     To visualise the attention weights of a saved attention model, run the command 'python3 test.py -loadModel -visualiseAttention'.<br/>
     Note: Use appropriate flags while running this file <br/>
   </p>
