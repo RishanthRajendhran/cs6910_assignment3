@@ -38,6 +38,8 @@ config = wandb.config
 wandb.run.name = f"{config.inputEmbedDim}_{config.numLayers}_{config.hiddenStates}_{config.cellType}_{config.dropout}_{config.activationFn}_{config.recurrentActivationFn}"
 wandb.run.save(wandb.run.name)
 
+punctuations = ['\n', '\t', '!', '"', '#', '$', '%', '&', "'", '(', ')', '*', '+', ',', '-', '.', '/', ':', ';', '<', '=', '>', '?', '@', '[', '\\', ']', '^', '_', '`', '{', '|', '}', '~']
+
 inputTexts = []
 targetTexts = []
 inputChars = set()
@@ -122,6 +124,9 @@ targetTexts = []
 inputChars = set()
 targetChars = set()
 langCodes = ["ta"]
+puncPos = {}
+nextLinePos = []
+countWords = 0
 for langCode in langCodes:
     nativeDataPath = f"./dakshina_dataset_v1.0/{langCode}/romanized/{langCode}.romanized.rejoined.test.native.txt"
     romanDataPath = f"./dakshina_dataset_v1.0/{langCode}/romanized/{langCode}.romanized.rejoined.test.roman.txt"
@@ -137,20 +142,24 @@ for langCode in langCodes:
         splitNativeWords = nativeLine.split(" ")
         splitRomanWords = romanLine.split(" ")
         for (inputText, targetText) in zip(splitNativeWords, splitRomanWords):
-            if inputText[-1].isalnum() == False:
+            if inputText[-1] in punctuations:
                 inputText = inputText[:-1]
-            if targetText[-1].isalnum() == False:
+            if targetText[-1] in punctuations:
+                if targetText[-1] not in ["\n", "\t"]:
+                    puncPos[countWords] = targetText[-1]
                 targetText = targetText[:-1]
             # print(f"{inputText} <=> {targetText}")
             targetText = "\t" + targetText + "\n"
             inputTexts.append(inputText)
             targetTexts.append(targetText)
+            countWords += 1
             for ch in inputText:
                 if ch not in inputChars:
                     inputChars.add(ch)
             for ch in targetText:
                 if ch not in targetChars:
                     targetChars.add(ch)
+        nextLinePos.append(countWords-1)
 
     inputChars.add("\t")
     targetChars.add("\t")
@@ -253,10 +262,21 @@ if "-visualiseAttention" not in sys.argv:
         original_inputTokenIndex,
         original_targetTokenIndex,
         maxEncoderSeqLen,
-        maxDecoderSeqLen
+        maxDecoderSeqLen,
+        puncPos,    #For output purpose
+        nextLinePos
     )
 else:
-    s.visualiseAttention(original_encoderInputData, original_decoderInputData, original_testInputTokens, original_testTargetTokens)
+    s.visualiseAttention(
+        testInputTexts,
+        testOutputTexts,
+        encoderInputData, 
+        decoderInputData,
+        original_inputTokenIndex,
+        original_targetTokenIndex,
+        maxEncoderSeqLen,
+        maxDecoderSeqLen
+    )
 
 run.finish()
 
