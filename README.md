@@ -21,6 +21,9 @@
     <p>
       Contains the class definition for a Recurrent Neural Network based seq2seq model with all the associated functions required to initialise an RNN as per specified configuration, train the RNN over the training set while using the validation set to find the hyperparameters and to evaluate the model over the test set. The function to visualise the attention weights in case of a model with attention is also present in this file. 
     </p>
+    <p>
+      Also contains the class definition for an AttentionLayer based on Bahdanau et al.
+    </p>
   </li>
   <li>
     <strong>train.py</strong>
@@ -35,6 +38,9 @@
     <p>
         This file generaes encoder and decoder inputs from the dakshina dataset and then builds an RNN with specified configuration. The RNN then makes predictions over the test dataset. For each prediction, the program prints the input encoder sequence, the expected decoded sequence and the actual decoder output. It also displays whether the prediction was correct. Information regarding number of sequences tested, number of perfect matches and number of partial matches also get printed. At the end, the word-level accuracy (perfect matches only) is displayed. <br/>
         Due to several mistakes in output dataset, a leeway is given to the model. If the number of corrections to be made to convert the decoder output to the expected output sequence is lesser than 2 and if the length of the decoder output and the expected sequence is at least twice as large as the number of corrections to make, it is considered a partial match. 
+    </p>
+    <p>
+      When running this program in the default test mode (i.e. w/o the "-visualiseAttention" flag), the preedictions made on the test data set is stored in the file "predictions_vanilla.txt" ("predictions_attention.text" in case of an attention based model) in the same folder. 
     </p>
     <p>
       By default, the program when run evaulates a previously built, trained and saved model (saved in ./best_model_acc in case of models without attention and in ./best_attn_model_acc in case of models with attention). If the flag "-loadModel" is not set while running the program, the program assumes that the user has forgotten to train the model first and returns an error. <br/>
