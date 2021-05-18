@@ -53,6 +53,30 @@
       To only visualise the attention weights in case of a model with attention (Remember to set "-addAttention" flag while running this file), the "-visualiseAttention" flag has to be used while running this program. <br />
       Note that the default behaviour of this program is to only make predictions of a previously built model over the test dataset. If one wants to visualise the attention weights of a model with attenion, the "-visualiseAttention" flag  must be set. When this flag is set, the program will not make predictions over the test data set. 
     </p>
+    <p>
+      For attention models, both text attention visualisation, which shows the top 3 predictions made for every input character in a given input sequence and also the determining character in the input encoder sequence for a given character in the decoder sequence, and text confidence visuluation, which shows what parts of the decoded sequence fired every cell in the final decoder layer, can be obtained. <br/>
+      To obtain text attention visualisation, run this file as follows:  "python3 test.py -loadModel -addAttention -visualiseTextAttention" <br/>
+      The text attention visualisation output will be saved as a HTML file "textAttentionResult.html" in the current working directory, and can be viewed on a web browser like Safari/Chrome <br/>
+      To obtain text confidence visualisation, run this file as follows:  "python3 test.py -loadModel -addAttention -visualiseTextConfidence" <br/>
+      The text confidence visualisation output will be saved as a HTML file "textConfidenceResult.html" in the current working directory, and can be viewed on a web browser like Safari/Chrome <br/>
+    </p>
+    <p>
+      For non-attention models, only text confidence visuluation, which shows what parts of the decoded sequence fired every cell in the final decoder layer, can be obtained. <br/>
+      To obtain text confidence visualisation, run this file as follows:  "python3 test.py -loadModel -visualiseTextConfidence" or "python3 test.py -loadModel -visualiseTextAttention" <br/>
+      The text confidence visualisation output will be saved as a HTML file "textConfidenceResult.html" in the current working directory, and can be viewed on a web browser like Safari/Chrome <br/>
+    </p>
+  </li>
+  <li>
+    <strong>textAttentionTemplate.html</strong>
+    <p>
+      Contains the HTML code for generating text attention visualisations. Used by test.py internally when generating text attention visualisations.
+    </p>
+  </li>
+  <li>
+    <strong>textConfidenceTemplate.html</strong>
+    <p>
+      Contains the HTML code for generating text confidence visualisations. Used by test.py internally when generating text confidence visualisations.
+    </p>
   </li>
   <li>
     <strong>sweep.yaml</strong>
@@ -88,6 +112,12 @@
     To evaluate the program over the test dataset, run the command 'python3 test.py -loadModel'.<br/>
     <h5>Visualise the attention weights for a recurrent neural network  with attention based seq2seq model for transliteration task</h5>
     To visualise the attention weights of a saved attention model, run the command 'python3 test.py -loadModel -addAttention -visualiseAttention'.<br/>
+    <h5>Visualise the text attention for a recurrent neural network  with attention based seq2seq model for transliteration task</h5>
+    To visualise the text attentions of a saved attention model, run the command 'python3 test.py -loadModel -addAttention -visualiseTextAttention'<br/>
+    <h5>Visualise the text confidence for a recurrent neural network  with attention based seq2seq model for transliteration task</h5>
+    To visualise the text confidence of a saved attention model, run the command 'python3 test.py -loadModel -addAttention -visualiseTextConfidence'.<br/>
+    <h5>Visualise the text confidence for a recurrent neural network  with non-attention based seq2seq model for transliteration task</h5>
+    To visualise the text confidence of a saved non-attention model, run the command 'python3 test.py -loadModel -visualiseTextConfidence' or 'python3 test.py -loadModel -visualiseTextAttention'.<br/>
   </p>
   <h5>Run a sweep</h5>
   <p>
