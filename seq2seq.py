@@ -289,10 +289,15 @@ class seq2seq:
             decoder_states = [stateH1, stateH2]
 
             decoder_dense = self.model.layers[8]    
-            decoder_outputs = decoder_dense(decoder_outputs)
-            self.decoder_model = ke.Model(
-                [decoder_inputs] + decoder_states_inputs, [decoder_outputs] + decoder_states
-            )
+            decoder_final_outputs = decoder_dense(decoder_outputs)
+            if forVisualisation or forTextVisualisation:
+                self.decoder_model = ke.Model(
+                    [decoder_inputs] + decoder_states_inputs, [decoder_final_outputs] + [decoder_outputs] + decoder_states
+                )
+            else:
+                self.decoder_model = ke.Model(
+                    [decoder_inputs] + decoder_states_inputs, [decoder_final_outputs] + decoder_states
+                )
         else:
             encoder_inputs = self.model.input[0]
             encoder_states = []
@@ -311,20 +316,23 @@ class seq2seq:
                 decoder_embedding, initial_state=decoder_states_inputs
             )
             decoder_states = [stateH, stateC]
-            lstmActs = decoder_outputs
             decoder_encoder_outputs = ke.layers.Input(shape=(max_encoder_seq_length,self.dHiddenStates),name="inference_encoder_output")
             attention_outputs, attention_states = self.model.layers[6]([decoder_outputs, decoder_encoder_outputs])
             concatenated_outputs = self.model.layers[7]([decoder_outputs, attention_outputs])
 
             decoder_dense = self.model.layers[8]    
-            decoder_outputs = decoder_dense(concatenated_outputs)
-            if forVisualisation or forTextVisualisation:
+            decoder_final_outputs = decoder_dense(concatenated_outputs)
+            if forTextVisualisation:
                 self.decoder_model = ke.Model(
-                    [decoder_inputs] + [decoder_encoder_outputs] + decoder_states_inputs, [decoder_outputs] + [attention_states] + decoder_states
+                    [decoder_inputs] + [decoder_encoder_outputs] + decoder_states_inputs, [decoder_final_outputs] + [attention_states] + [decoder_outputs] + decoder_states
+                )
+            elif forVisualisation:
+                self.decoder_model = ke.Model(
+                    [decoder_inputs] + [decoder_encoder_outputs] + decoder_states_inputs, [decoder_final_outputs] + [attention_states] + decoder_states
                 )
             else:
                 self.decoder_model = ke.Model(
-                    [decoder_inputs] + [decoder_encoder_outputs] + decoder_states_inputs, [decoder_outputs] + decoder_states
+                    [decoder_inputs] + [decoder_encoder_outputs] + decoder_states_inputs, [decoder_final_outputs] + decoder_states
                 )
 
     def testModel(self, inputTexts, outputTexts, inputData, outputData, input_token_index, target_token_index, max_encoder_seq_length, max_decoder_seq_length, puncPos=[], nextLinePos=[]):
@@ -484,15 +492,12 @@ class seq2seq:
             plt.title(f"Input sequence: {inputTexts[seq_index]} | Output sequence: {outputTexts[seq_index]} | Decoded sentence: {decoded_sentence}")
             wandb.log({f"plot_{seq_index-start}": wandb.Image(plt)})
 
-    def visualiseTextAttention(self, inputTexts, outputTexts, inputData, outputData, input_token_index, target_token_index, max_encoder_seq_length, max_decoder_seq_length):
+    def visualiseTextAttention(self, inputTexts, outputTexts, inputData, outputData, input_token_index, target_token_index, max_encoder_seq_length, max_decoder_seq_length, textConfidence=False):
         
         #Plots text attention heatmaps for 10 words from the test dataset
 
         if self.loadModel == False:
             print("Compile and generate model first!")
-            return 
-        if self.addAttention == False:
-            print("Set addAttention to True first!")
             return 
 
         self.defineEncoderDecoderModel(max_encoder_seq_length, True, True)
@@ -508,10 +513,15 @@ class seq2seq:
         predsList = []
         attentionsList = []
         predictions = []
+        allOuts = []
+        allAtts = []
         for seq_index in range(start, start + maxPlots):
             input_seq = inputData[seq_index : seq_index + 1]
 
-            encoder_outputs, states_value = self.encoder_model.predict(input_seq)
+            if self.addAttention:
+                encoder_outputs, states_value = self.encoder_model.predict(input_seq)
+            else: 
+                states_value = self.encoder_model.predict(input_seq)
 
             target_seq = np.zeros((1,1,self.dNumTokens))
             target_seq[0, 0, target_token_index["\t"]] = 1.0 
@@ -524,31 +534,27 @@ class seq2seq:
     
             while not stop_condition:
                 inp_target_seq = np.argmax(target_seq,axis=2)
-                output_token, attnStates, sH, sC = self.decoder_model.predict([inp_target_seq] + [encoder_outputs] + states_value)
-                maxOuts = output_token[0, 0]
-                s1 = np.argsort(maxOuts)[-1]
-                s2 = np.argsort(maxOuts)[-2]
-                s3 = np.argsort(maxOuts)[-3]
-                # target_seq = np.zeros((1, 1, self.dNumTokens))
-                # target_seq[0, 0, s1] = 1.0
-                # s1 = self.predictRest(target_seq, encoder_outputs, states_value, reverse_target_char_index, decoded_sentence, max_decoder_seq_length)
-                # target_seq = np.zeros((1, 1, self.dNumTokens))
-                # target_seq[0, 0, s2] = 1.0
-                # s2 = self.predictRest(target_seq, encoder_outputs, states_value, reverse_target_char_index, decoded_sentence, max_decoder_seq_length)
-                # target_seq = np.zeros((1, 1, self.dNumTokens))
-                # target_seq[0, 0, s3] = 1.0
-                # s3 = self.predictRest(target_seq, encoder_outputs, states_value, reverse_target_char_index, decoded_sentence, max_decoder_seq_length)
-                # s1 = s1.strip()
-                # s2 = s2.strip()
-                # s3 = s3.strip()
-                s1 = reverse_target_char_index[s1]
-                s2 = reverse_target_char_index[s2]
-                s3 = reverse_target_char_index[s3]
-                attnsList.append(attnStates.reshape(-1).tolist()[:len(inputTexts[seq_index])])
-                s1 = (s1).strip()
-                s2 = (s2).strip()
-                s3 = (s3).strip()
-                maxOutsList.append([s1, s2, s3])
+                if self.addAttention:
+                    output_token, attnStates, lastDecOuts, sH, sC = self.decoder_model.predict([inp_target_seq] + [encoder_outputs] + states_value)
+                    maxOuts = output_token[0, 0]
+                    s1 = np.argsort(maxOuts)[-1]
+                    s2 = np.argsort(maxOuts)[-2]
+                    s3 = np.argsort(maxOuts)[-3]
+                    s1 = reverse_target_char_index[s1]
+                    s2 = reverse_target_char_index[s2]
+                    s3 = reverse_target_char_index[s3]
+                    attnsList.append(attnStates.reshape(-1).tolist()[:len(inputTexts[seq_index])])
+                    s1 = (s1).strip()
+                    s2 = (s2).strip()
+                    s3 = (s3).strip()
+                    maxOutsList.append([s1, s2, s3])
+                    allAtts.append(lastDecOuts.reshape(-1).tolist())
+                    allOuts.append(reverse_target_char_index[np.argmax(output_token[0, 0])])
+                else: 
+                    output_token, attnStates, sH, sC = self.decoder_model.predict([inp_target_seq] + states_value)
+                    # attnStates = (1/(1 + np.exp(-attnStates)))
+                    allAtts.append(attnStates.reshape(-1).tolist())
+                    allOuts.append(reverse_target_char_index[np.argmax(output_token[0, 0])])
                 i += 1 
                 sampled_token_index = np.argmax(output_token[0, 0])
                 sampled_char = reverse_target_char_index[sampled_token_index]
@@ -569,18 +575,33 @@ class seq2seq:
             predsList.append(maxOutsList)
             attentionsList.append(attnsList)
             predictions.append(decoded_sentence.strip())
+        if self.addAttention and not textConfidence:
+            lines = []
+            with open("./textAttentionTemplate.html", "r") as f: 
+                lines = f.readlines()
+            
+            line63 = [f"\t\twords = {json.dumps(words)};\n"]
+            line64 = [f"\t\tpredsList = {json.dumps(predsList)};\n"]
+            line65 = [f"\t\tattentionsList = {json.dumps(attentionsList)};\n"]
+            line66 = [f"\t\tpredictions = {json.dumps(predictions)};\n"]
+            lines = lines[:63] + line63 + line64 + line65 + line66 + lines[63:]
+            with open("./textAttentionResult.html", "w") as f: 
+                f.writelines(lines)
+        else: 
+            lines = []
+            with open("./textConfidenceTemplate.html", "r") as f: 
+                lines = f.readlines()
 
-        lines = []
-        with open("./textAttentionTemplate.html", "r") as f: 
-            lines = f.readlines()
-        
-        line63 = [f"\t\twords = {json.dumps(words)};\n"]
-        line64 = [f"\t\tpredsList = {json.dumps(predsList)};\n"]
-        line65 = [f"\t\tattentionsList = {json.dumps(attentionsList)};\n"]
-        line66 = [f"\t\tpredictions = {json.dumps(predictions)};\n"]
-        lines = lines[:62] + line62 + line63 + line64 + line65 + lines[62:]
-        with open("./textAttentionResult.html", "w") as f: 
-            f.writelines(lines)
+            allAtts = np.transpose(allAtts)
+            allAtts = (allAtts - np.mean(allAtts, axis=0))
+            allAtts = 1/(1+np.exp(-allAtts))
+            allAtts = allAtts.tolist()
+            
+            line47 = [f"\t\tpredsList = {json.dumps(allOuts)};\n"]
+            line48 = [f"\t\tattnList = {json.dumps(allAtts)};\n"]
+            lines = lines[:47] + line47 + line48 + lines[47:]
+            with open("./textConfidenceResult.html", "w") as f: 
+                f.writelines(lines)
 
     def predictRest(self, target_seq, encoder_outputs, states_value, reverse_target_char_index, decoded_sentence, max_decoder_seq_length):
         inp_target_seq = np.argmax(target_seq,axis=2)

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<head>
+    <title>
+        Text Attention Visualistion
+    </title>
+    <style>
+        .outerBox {
+            display: flex;
+            flex-direction: column;
+            border:10px solid black;
+            padding: 2% 1% 1% 1%;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+        }
+        .innerBox {
+            margin:10% 0;
+        }
+        .colorBoxLegendContainer {
+            display: flex;
+            flex-direction: column;
+        }
+        .colorBoxContainer {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+        }
+        .colorBox {
+            margin:1% 0;
+        }
+        .legendContainer {
+            display: flex;
+            font-size: 1em;
+            justify-content: space-between;
+            /* align-items: space-between; */
+            min-width: 100%;
+        }
+        h6 {
+            font-size: 1rem;
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="outerBox">
+    </div>
+    <script type="text/javascript">      
+        colors = ['#85c2e1', '#89c4e2', '#95cae5', '#99cce6', '#a1d0e8',
+                  '#b2d9ec', '#baddee', '#c2e1f0', '#eff7fb', '#f9e8e8',
+                  '#f9e8e8', '#f9d4d4', '#f9bdbd', '#f8a8a8', '#f68f8f',
+                  '#f47676', '#f45f5f', '#f34343', '#f33b3b', '#f42e2e'];
+        outerBox = document.getElementsByClassName("outerBox")[0]
+        instruction = document.createElement("h1");
+        instruction.innerText = "Visualisation to understand what makes cells in the last hidden layer fire";
+        outerBox.append(instruction);
+        colorBoxLegendContainer = document.createElement("div");
+        colorBoxLegendContainer.classList.add("colorBoxLegendContainer");
+        colorBoxContainer = document.createElement("div");
+        colorBoxContainer.classList.add("colorBoxContainer");
+        for(var color in colors) {
+            var div = document.createElement("span");
+            div.classList.add("colorBox");
+            div.style.backgroundColor = colors[color];
+            div.style.minWidth = "20px";
+            div.style.minHeight = "20px";
+            colorBoxContainer.appendChild(div);
+        }
+        colorBoxLegendContainer.append(colorBoxContainer);
+        legendContainer = document.createElement("div");
+        legendContainer.classList.add("legendContainer");
+        legendContainer.innerHTML = `<div>
+                                        <h6>
+                                            Highly irrelevant
+                                        </h6>
+                                    </div>
+                                    <div>
+                                        <h6>
+                                            Highly relevant
+                                        </h6>
+                                    </div>`;
+        colorBoxLegendContainer.append(legendContainer);
+        outerBox.append(colorBoxLegendContainer);
+        for(row in attnList) {
+            innerBox = document.createElement("h6");
+            innerBox.innerText = "Cell " + row;
+            outerBox.append(innerBox);
+            innerBox = document.createElement("div");
+            for(col in attnList[row]) {
+                span = document.createElement("span");
+                if(predsList[col] == "\n") {
+                    span.innerText = " ";
+                } else {
+                    span.innerText = predsList[col];
+                    span.style.backgroundColor = colors[Math.round((attnList[row][col]*100)/5)];
+                }
+                innerBox.append(span);
+            }
+            outerBox.append(innerBox);
+            innerBox = document.createElement("div");
+            innerBox.innerHTML = "<hr/>";
+            outerBox.append(innerBox);
+        }
+    </script>
+</body>

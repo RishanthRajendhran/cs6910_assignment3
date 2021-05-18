@@ -253,7 +253,7 @@ s = seq2seq(
     config.validationSplit
 )
 
-if "-visualiseTextAttention" in sys.argv:
+if "-visualiseTextAttention" in sys.argv or "-visualiseTextConfidence" in sys.argv:
     s.visualiseTextAttention(
         testInputTexts,
         testOutputTexts,
@@ -262,7 +262,8 @@ if "-visualiseTextAttention" in sys.argv:
         original_inputTokenIndex,
         original_targetTokenIndex,
         maxEncoderSeqLen,
-        maxDecoderSeqLen
+        maxDecoderSeqLen,
+        ("-visualiseTextConfidence" in sys.argv)
     )
 elif "-visualiseAttention" in sys.argv:
     s.visualiseAttention(

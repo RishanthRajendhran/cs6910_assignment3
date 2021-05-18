@@ -7,7 +7,7 @@
         .outerBox {
             display: flex;
             flex-direction: column;
-            border:1px solid black;
+            border:10px solid black;
             padding: 2% 1% 1% 1%;
             align-items: center;
             justify-content: center;
@@ -17,12 +17,17 @@
             font-weight: 800;
         }
         .predBox {
+            display: flex;
+            flex-direction: row;
             font-weight: 800;
         }
         .innerBoxContainer {
             display: flex;
             flex-direction: row;
             justify-content: center;
+        }
+        .innerPredBox {
+            margin:1% 0;
         }
         .innerBox {
             margin:1% 0;
@@ -48,6 +53,7 @@
         }
         h6 {
             font-size: 1rem;
+            margin-top: 0;
         }
     </style>
 </head>
@@ -55,11 +61,17 @@
     <div class="outerBox">
     </div>
     <script type="text/javascript">      
-       colors = ['#85c2e1', '#89c4e2', '#95cae5', '#99cce6', '#a1d0e8',
-		'#b2d9ec', '#baddee', '#c2e1f0', '#eff7fb', '#f9e8e8',
-		'#f9e8e8', '#f9d4d4', '#f9bdbd', '#f8a8a8', '#f68f8f',
-		'#f47676', '#f45f5f', '#f34343', '#f33b3b', '#f42e2e'];
+        colors = ['#85c2e1', '#89c4e2', '#95cae5', '#99cce6', '#a1d0e8',
+                  '#b2d9ec', '#baddee', '#c2e1f0', '#eff7fb', '#f9e8e8',
+                  '#f9e8e8', '#f9d4d4', '#f9bdbd', '#f8a8a8', '#f68f8f',
+                  '#f47676', '#f45f5f', '#f34343', '#f33b3b', '#f42e2e'];
         outerBox = document.getElementsByClassName("outerBox")[0]
+        instruction = document.createElement("h6");
+        instruction.innerText = "Hover over the தமிழ் alphabets to see the corresponding top 3 English alphabets predicted";
+        outerBox.append(instruction);
+        instruction = document.createElement("h6");
+        instruction.innerText = "Hover over the English alphabets to see the corresponding தமிழ் alphabets that influenced its prediction";
+        outerBox.append(instruction);
         words.forEach((w, i) => {
             word = w;
             preds = predsList[i];
@@ -70,40 +82,86 @@
             div.classList.add("wordBox");
             div.innerText = word;
             outerBox.append(div);
-            div = document.createElement("div");
-            div.classList.add("predBox");
-            div.innerText = prediction
-            outerBox.append(div);
+            predBox = document.createElement("div");
+            predBox.classList.add("predBox");
+            predBox.classList.add("predBox"+i);
+            for(var ch in prediction) {
+                var div = document.createElement("span");
+                div.classList.add("innerPredBox");
+                div.classList.add("innerPredBox"+i);
+                div.innerText = predictions[i][ch];
+                predBox.appendChild(div);
+            }
+            outerBox.append(predBox);
+            topPreds = document.createElement("div");
+            topPreds.classList.add("predBox");
+            topPreds.classList.add("predBox"+i);
+            topPreds.classList.add("topPreds"+i);
+            topPreds.style.display = "none";
+            outerBox.append(topPreds);
             innerBoxContainer = document.createElement("div");
             innerBoxContainer.classList.add("innerBoxContainer");
+            innerBoxContainer.classList.add("innerBoxContainer"+i);
             for(var ch in word) {
                 var div = document.createElement("span");
                 div.classList.add("innerBox");
+                div.classList.add("innerBox"+i);
                 // div.id = "span"+ch;
                 div.innerText = word[ch];
                 innerBoxContainer.appendChild(div);
             }
             outerBox.append(innerBoxContainer);
-            predBox = document.getElementsByClassName("predBox")[0]
-            innerBoxes = document.getElementsByClassName("innerBox");
+            predBox = document.getElementsByClassName("predBox"+i)[0]
+            innerBoxes = document.getElementsByClassName("innerBox"+i);
             Array.from(innerBoxes).forEach(
                 (box, index) => {
                     box.addEventListener("mouseover",() => {
-                        Array.from(innerBoxes).forEach(
-                            (b, i) => {
-                                value = Math.round((attentions[index][i]*100)/5);
-                                b.style.backgroundColor = colors[value];
+                        Array.from(document.getElementsByClassName("innerBox"+i)).forEach(
+                            (bb, ii) => {
+                                value = Math.round((attentionsList[i][index][ii]*100)/5);
+                                bb.style.backgroundColor = colors[value];
                             }
                         );
-                        predBox.innerText = preds[index][0] + " | " + preds[index][1] + " | " + preds[index][2] ;
+                        predBox = document.getElementsByClassName("predBox"+i)[0];
+                        predBox.style.display = "none";
+                        topPreds = document.getElementsByClassName("topPreds"+i)[0];
+                        topPreds.innerText = predsList[i][index][0] + " | " + predsList[i][index][1] + " | " + predsList[i][index][2];
+                        topPreds.style.display = "block";
                     });
                     box.addEventListener("mouseout",() => {
-                        Array.from(innerBoxes).forEach(
+                        Array.from(document.getElementsByClassName("innerBox"+i)).forEach(
                             (b, i) => {
                                 b.style.backgroundColor = "white";
                             }
                         );
-                        predBox.innerText = prediction
+                        predBox = document.getElementsByClassName("predBox"+i)[0];
+                        predBox.style.display = "block";
+                        topPreds = document.getElementsByClassName("topPreds"+i)[0];
+                        topPreds.style.display = "none";
+                    });
+                }
+            );
+            Array.from(document.getElementsByClassName("innerPredBox"+i)).forEach(
+                (pbox, pindex) => {
+                    pbox.addEventListener("mouseover",() => {
+                        Array.from(document.getElementsByClassName("innerBox"+i)).forEach(
+                            (bb, ii) => {
+                                value = Math.round((attentionsList[i][pindex][ii]*100)/5);
+                                bb.style.backgroundColor = colors[value];
+                            }
+                        );
+                        predBox = document.getElementsByClassName("innerPredBox"+i)[pindex]
+                        predBox.style.color = "red";
+                        
+                    });
+                    pbox.addEventListener("mouseout",() => {
+                        Array.from(document.getElementsByClassName("innerBox"+i)).forEach(
+                            (b, i) => {
+                                b.style.backgroundColor = "white";
+                            }
+                        );
+                        predBox = document.getElementsByClassName("innerPredBox"+i)[pindex]
+                        predBox.style.color = "black";
                     });
                 }
             );
@@ -134,9 +192,6 @@
                                         </div>`;
             colorBoxLegendContainer.append(legendContainer);
             outerBox.append(colorBoxLegendContainer);
-            instruction = document.createElement("h6");
-            instruction.innerText = "Hover over the Tamizh alphabets to see the corresponding top 3 English alphabets predicted";
-            outerBox.append(instruction);
         });
     </script>
 </body>
