@@ -59,7 +59,48 @@
       The text attention visualisation output will be saved as a HTML file "textAttentionResult.html" in the current working directory, and can be viewed on a web browser like Safari/Chrome <br/>
       To obtain text confidence visualisation, run this file as follows:  "python3 test.py -loadModel -addAttention -visualiseTextConfidence" <br/>
       The text confidence visualisation output will be saved as a HTML file "textConfidenceResult.html" in the current working directory, and can be viewed on a web browser like Safari/Chrome <br/>
+      <strong>Sample Text Confidence Visualisation for an Attention-based Model</strong>
       <img src="./sampleTextConfidenceVisualisation.png" alt="sampleTextConfidenceVisualisation"/>
+      <strong>Interesting observations:</strong>
+      <ul>
+        <li>
+          Cell 8 fires for all characters except the first few characters in the input sequence.
+        </li>
+        <li>
+          Cell 36 fires for the last few characters of long input sequences.
+        </li>
+        <li>
+          Cell 39 fires for the first few (4-5) characters of all input sequences.
+        </li>
+        <li>
+          Cell 40 fires for the first 2-3 characters of all input sequences.
+        </li>
+        <li>
+          Cell 41 fires for almost every phonetic character sequences in the input sequence. <br/>
+          E.g. (r)a(s)a(ay)a(n)a(n)ga(l)i(n)dri for (இர)(ச)(ாய)(ண)(ங்)க(ள)ி(ன்)றி where character sequences with high activations have been enclosed in brackets. <br/>
+          (இர) => (r) <br/>
+          (ச)  => (s) <br/>
+          (ாய) => (ay) <br/>
+          (ண) => (n) <br/>
+          (ங்) => (n) <br/>
+          (ள) => (l) <br/>
+          (ன்) => (n) <br/>
+        </li>
+        <li>
+          Cell 46 did not fire for different sounds with 't/d' as base. <br/>
+          E.g. Characters enclosed in bracket did not fire<br/>
+          rasaayanangalind(r)i => (dri) sound <br/>
+          kat(tu)ppad(u)thapaduvat(h)aal => (tu), (du) and (th) sounds <br/>
+          rasaayana => fired for entire sequence due to absence of 't/d'-based sounds<br/>
+          pinvilaivugalaana => fired for entire sequence due to absence of 't/d'-based sounds<br/>
+          kaat(r)u => (tru) sound<br/>
+          maasupad(u)vat(h)u,t(h)anneer => (du), (th) and (th) sounds<br/>
+          maasupaad(u)velan => (du) sound<br/>
+          nilangal => fired for entire sequence due to absence of 't/d'-based sounds<br/>
+          maasupad(u)vat(tr)u,marum => (du) and (tru) sounds<br/>
+          pira => fired for entire sequence due to absence of 't/d'-based sounds<br/>
+        </li>
+      </ul>
     </p>
     <p>
       For non-attention models, only text confidence visuluation, which shows what parts of the decoded sequence fired every cell in the final decoder layer, can be obtained. <br/>
