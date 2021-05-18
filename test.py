@@ -253,7 +253,29 @@ s = seq2seq(
     config.validationSplit
 )
 
-if "-visualiseAttention" not in sys.argv:
+if "-visualiseTextAttention" in sys.argv:
+    s.visualiseTextAttention(
+        testInputTexts,
+        testOutputTexts,
+        encoderInputData, 
+        decoderInputData,
+        original_inputTokenIndex,
+        original_targetTokenIndex,
+        maxEncoderSeqLen,
+        maxDecoderSeqLen
+    )
+elif "-visualiseAttention" in sys.argv:
+    s.visualiseAttention(
+        testInputTexts,
+        testOutputTexts,
+        encoderInputData, 
+        decoderInputData,
+        original_inputTokenIndex,
+        original_targetTokenIndex,
+        maxEncoderSeqLen,
+        maxDecoderSeqLen
+    )
+else:
     s.testModel(
         testInputTexts,
         testOutputTexts,
@@ -266,17 +288,7 @@ if "-visualiseAttention" not in sys.argv:
         puncPos,    #For output purpose
         nextLinePos
     )
-else:
-    s.visualiseAttention(
-        testInputTexts,
-        testOutputTexts,
-        encoderInputData, 
-        decoderInputData,
-        original_inputTokenIndex,
-        original_targetTokenIndex,
-        maxEncoderSeqLen,
-        maxDecoderSeqLen
-    )
+    
 
 run.finish()
 

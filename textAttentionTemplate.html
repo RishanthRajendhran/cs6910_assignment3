@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<head>
+    <title>
+        Text Attention Visualistion
+    </title>
+    <style>
+        .outerBox {
+            display: flex;
+            flex-direction: column;
+            border:1px solid black;
+            padding: 2% 1% 1% 1%;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+        }
+        .wordBox {
+            font-weight: 800;
+        }
+        .predBox {
+            font-weight: 800;
+        }
+        .innerBoxContainer {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+        }
+        .innerBox {
+            margin:1% 0;
+        }
+        .colorBoxLegendContainer {
+            display: flex;
+            flex-direction: column;
+        }
+        .colorBoxContainer {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+        }
+        .colorBox {
+            margin:1% 0;
+        }
+        .legendContainer {
+            display: flex;
+            font-size: 1em;
+            justify-content: space-between;
+            /* align-items: space-between; */
+            min-width: 100%;
+        }
+        h6 {
+            font-size: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="outerBox">
+    </div>
+    <script type="text/javascript">      
+       colors = ['#85c2e1', '#89c4e2', '#95cae5', '#99cce6', '#a1d0e8',
+		'#b2d9ec', '#baddee', '#c2e1f0', '#eff7fb', '#f9e8e8',
+		'#f9e8e8', '#f9d4d4', '#f9bdbd', '#f8a8a8', '#f68f8f',
+		'#f47676', '#f45f5f', '#f34343', '#f33b3b', '#f42e2e'];
+        outerBox = document.getElementsByClassName("outerBox")[0]
+        words.forEach((w, i) => {
+            word = w;
+            preds = predsList[i];
+            attentions = attentionsList[i];
+            prediction = predictions[i];
+
+            div = document.createElement("div");
+            div.classList.add("wordBox");
+            div.innerText = word;
+            outerBox.append(div);
+            div = document.createElement("div");
+            div.classList.add("predBox");
+            div.innerText = prediction
+            outerBox.append(div);
+            innerBoxContainer = document.createElement("div");
+            innerBoxContainer.classList.add("innerBoxContainer");
+            for(var ch in word) {
+                var div = document.createElement("span");
+                div.classList.add("innerBox");
+                // div.id = "span"+ch;
+                div.innerText = word[ch];
+                innerBoxContainer.appendChild(div);
+            }
+            outerBox.append(innerBoxContainer);
+            predBox = document.getElementsByClassName("predBox")[0]
+            innerBoxes = document.getElementsByClassName("innerBox");
+            Array.from(innerBoxes).forEach(
+                (box, index) => {
+                    box.addEventListener("mouseover",() => {
+                        Array.from(innerBoxes).forEach(
+                            (b, i) => {
+                                value = Math.round((attentions[index][i]*100)/5);
+                                b.style.backgroundColor = colors[value];
+                            }
+                        );
+                        predBox.innerText = preds[index][0] + " | " + preds[index][1] + " | " + preds[index][2] ;
+                    });
+                    box.addEventListener("mouseout",() => {
+                        Array.from(innerBoxes).forEach(
+                            (b, i) => {
+                                b.style.backgroundColor = "white";
+                            }
+                        );
+                        predBox.innerText = prediction
+                    });
+                }
+            );
+            colorBoxLegendContainer = document.createElement("div");
+            colorBoxLegendContainer.classList.add("colorBoxLegendContainer");
+            colorBoxContainer = document.createElement("div");
+            colorBoxContainer.classList.add("colorBoxContainer");
+            for(var color in colors) {
+                var div = document.createElement("span");
+                div.classList.add("colorBox");
+                div.style.backgroundColor = colors[color];
+                div.style.minWidth = "20px";
+                div.style.minHeight = "20px";
+                colorBoxContainer.appendChild(div);
+            }
+            colorBoxLegendContainer.append(colorBoxContainer);
+            legendContainer = document.createElement("div");
+            legendContainer.classList.add("legendContainer");
+            legendContainer.innerHTML = `<div>
+                                            <h6>
+                                                Highly irrelevant
+                                            </h6>
+                                        </div>
+                                        <div>
+                                            <h6>
+                                                Highly relevant
+                                            </h6>
+                                        </div>`;
+            colorBoxLegendContainer.append(legendContainer);
+            outerBox.append(colorBoxLegendContainer);
+            instruction = document.createElement("h6");
+            instruction.innerText = "Hover over the Tamizh alphabets to see the corresponding top 3 English alphabets predicted";
+            outerBox.append(instruction);
+        });
+    </script>
+</body>

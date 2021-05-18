@@ -40,7 +40,7 @@
         Due to several mistakes in output dataset, a leeway is given to the model. If the number of corrections to be made to convert the decoder output to the expected output sequence is lesser than 2 and if the length of the decoder output and the expected sequence is at least twice as large as the number of corrections to make, it is considered a partial match. 
     </p>
     <p>
-      When running this program in the default test mode (i.e. w/o the "-visualiseAttention" flag), the preedictions made on the test data set is stored in the file "predictions_vanilla.txt" ("predictions_attention.text" in case of an attention based model) in the same folder. 
+      When running this program in the default test mode (i.e. w/o the "-visualiseAttention" flag), the predictions made on the test data set is stored in the file "predictions_vanilla.txt" ("predictions_attention.text" in case of an attention based model) in the same folder. 
     </p>
     <p>
       By default, the program when run evaulates a previously built, trained and saved model (saved in ./best_model_acc in case of models without attention and in ./best_attn_model_acc in case of models with attention). If the flag "-loadModel" is not set while running the program, the program assumes that the user has forgotten to train the model first and returns an error. <br/>
