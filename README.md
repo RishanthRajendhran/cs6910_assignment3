@@ -59,6 +59,7 @@
       The text attention visualisation output will be saved as a HTML file "textAttentionResult.html" in the current working directory, and can be viewed on a web browser like Safari/Chrome <br/>
       To obtain text confidence visualisation, run this file as follows:  "python3 test.py -loadModel -addAttention -visualiseTextConfidence" <br/>
       The text confidence visualisation output will be saved as a HTML file "textConfidenceResult.html" in the current working directory, and can be viewed on a web browser like Safari/Chrome <br/>
+      <img src="./sampleTextConfidenceVisualisation.png" alt="sampleTextConfidenceVisualisation"/>
     </p>
     <p>
       For non-attention models, only text confidence visuluation, which shows what parts of the decoded sequence fired every cell in the final decoder layer, can be obtained. <br/>
