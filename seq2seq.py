@@ -10,6 +10,8 @@ import matplotlib
 import matplotlib.pyplot as plt
 from tensorflow.python.keras.layers import Layer as kerasLayers
 import json
+import seaborn as sn 
+import pandas as pd 
 
 class AttentionLayer(kerasLayers):  #Bahudanau et al. attention model
     def __init__(self):
@@ -335,7 +337,7 @@ class seq2seq:
                     [decoder_inputs] + [decoder_encoder_outputs] + decoder_states_inputs, [decoder_final_outputs] + decoder_states
                 )
 
-    def testModel(self, inputTexts, outputTexts, inputData, outputData, input_token_index, target_token_index, max_encoder_seq_length, max_decoder_seq_length, puncPos=[], nextLinePos=[]):
+    def testModel(self, inputTexts, outputTexts, inputData, outputData, input_token_index, target_token_index, max_encoder_seq_length, max_decoder_seq_length, puncPos=[], nextLinePos=[], plotConfusion=False):
 
         self.defineEncoderDecoderModel(max_encoder_seq_length)
 
@@ -345,22 +347,38 @@ class seq2seq:
         #we consider it a partial match
         partialMatch = 0    #If the prediction was reasonably close
         countWord = 0
+        correctionsFreq = [0]*(max_decoder_seq_length+1)
+        confusionCount = np.array([[0]*(len(target_token_index))]*(len(target_token_index)))
+        maxNumCorr = 0
         with open(self.predFilePath,"w") as predFile:
             for seq_index in range(len(inputData)):
                 input_seq = inputData[seq_index : seq_index + 1]
                 output_seq = outputData[seq_index : seq_index + 1]
                 decoded_sentence = self.decodeSequence(input_seq, inputData, outputData, input_token_index, target_token_index, max_encoder_seq_length, max_decoder_seq_length)
-                if decoded_sentence[-1] == "\n":
-                    predFile.write(decoded_sentence[:-1])
-                else: 
-                    predFile.write(decoded_sentence)
-                if countWord in nextLinePos:
-                    predFile.write("\n")
-                    predFile.flush()  #continuous file i/o slows down execution - use only for debugging purpose
-                elif countWord in puncPos.keys():
-                    predFile.write(puncPos[countWord])
-                else: 
-                    predFile.write(" ")
+                if plotConfusion:
+                    ijk = min(len(outputTexts[seq_index]), len(decoded_sentence))
+                    for z in range(ijk):
+                        if outputTexts[seq_index][z] not in target_token_index.keys():
+                            ind1 = target_token_index["<UNKT>"]
+                        else: 
+                            ind1 = target_token_index[outputTexts[seq_index][z]]
+                        if decoded_sentence[z] not in target_token_index.keys():
+                            ind2 = target_token_index["<UNKT>"]
+                        else: 
+                            ind2 = target_token_index[decoded_sentence[z]]
+                        confusionCount[ind1][ind2] += 1
+                else:
+                    if decoded_sentence[-1] == "\n":
+                        predFile.write(decoded_sentence[:-1])
+                    else: 
+                        predFile.write(decoded_sentence)
+                    if countWord in nextLinePos:
+                        predFile.write("\n")
+                        predFile.flush()  #continuous file i/o slows down execution - use only for debugging purpose
+                    elif countWord in puncPos.keys():
+                        predFile.write(puncPos[countWord])
+                    else: 
+                        predFile.write(" ")
                 countWord += 1
                 print("--------------------------------------")
                 print("Input sequence:",inputTexts[seq_index])
@@ -369,6 +387,10 @@ class seq2seq:
                 isCorrect = (outputTexts[seq_index].strip("\t").lower() == decoded_sentence.strip("\t").lower())
                 print("Correct Prediction?: "+str(isCorrect))
                 numCorr = sum([0 if s[0] == " " else 1 for (i,s) in list(enumerate(difflib.ndiff(decoded_sentence.strip("\t").lower(),outputTexts[seq_index].strip("\t").lower())))])
+                if maxNumCorr < numCorr:
+                    maxNumCorr = numCorr
+                if numCorr < max_decoder_seq_length:
+                    correctionsFreq[numCorr] += 1
                 if numCorr:
                     print(f"Number of corrections required: {numCorr}")
                     if numCorr <=2 and len(outputTexts[seq_index]) >= max(5,2*numCorr) and len(decoded_sentence) >= max(5,2*numCorr):
@@ -383,6 +405,25 @@ class seq2seq:
                 print("--------------------------------------")
             acc /= len(inputData)
             print("Word-level accuracy: "+ str(acc))
+            if plotConfusion:
+                np.save("confusionCount.npy",confusionCount)
+                np.save("correctionsFreq.npy",correctionsFreq)
+                confusionCount = np.array(confusionCount)
+                for z in range(len(confusionCount)//20+1):
+                    for y in range(len(confusionCount)//20+1):
+                        confusionDF = pd.DataFrame(confusionCount[20*z:20*z+20, 20*y:20*y+20], index = np.array(list(target_token_index.keys()))[20*z:20*z+20], columns = np.array(list(target_token_index.keys())[20*y:20*y+20]))
+                        plt.figure(figsize = (10,7))
+                        sn.heatmap(confusionDF, annot=True)
+                        wandb.log({f"plot_{z}_{y}": wandb.Image(plt)})
+                        plt.xlabel("Expected Character")
+                        plt.ylabel("Predcited Character")
+                        plt.clf()
+                plt.bar(np.arange(max(1,maxNumCorr)), correctionsFreq[:max(1,maxNumCorr)])
+                plt.xticks(np.arange(max(1,maxNumCorr)), np.arange(max(1,maxNumCorr)))
+                plt.xlabel("Number of corrections required")
+                plt.ylabel("Number of prediction instances")
+                wandb.log({f"plotCorrectionFrequency": wandb.Image(plt)})
+
 
 
     def decodeSequence(self, input_seq, inputData, outputData, input_token_index, target_token_index, max_encoder_seq_length, max_decoder_seq_length):

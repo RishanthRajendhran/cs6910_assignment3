@@ -265,6 +265,20 @@ if "-visualiseTextAttention" in sys.argv or "-visualiseTextConfidence" in sys.ar
         maxDecoderSeqLen,
         ("-visualiseTextConfidence" in sys.argv)
     )
+elif "-plotConfusion"  in sys.argv:
+    s.testModel(
+        testInputTexts,
+        testOutputTexts,
+        encoderInputData, 
+        decoderInputData,
+        original_inputTokenIndex,
+        original_targetTokenIndex,
+        maxEncoderSeqLen,
+        maxDecoderSeqLen,
+        puncPos,    #For output purpose
+        nextLinePos,
+        True
+    )
 elif "-visualiseAttention" in sys.argv:
     s.visualiseAttention(
         testInputTexts,
@@ -274,7 +288,8 @@ elif "-visualiseAttention" in sys.argv:
         original_inputTokenIndex,
         original_targetTokenIndex,
         maxEncoderSeqLen,
-        maxDecoderSeqLen
+        maxDecoderSeqLen,
+        False
     )
 else:
     s.testModel(

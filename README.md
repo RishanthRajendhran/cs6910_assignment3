@@ -50,6 +50,9 @@
         To test a model with attention, the "-addAttention" flag has to be set while running the program. 
     </p>
     <p>
+      To plot the confusion matrix and (number of corrections required vs number of test instances), run this program with the flag "-plotConfusion".
+    </p>
+    <p>
       To only visualise the attention weights in case of a model with attention (Remember to set "-addAttention" flag while running this file), the "-visualiseAttention" flag has to be used while running this program. <br />
       Note that the default behaviour of this program is to only make predictions of a previously built model over the test dataset. If one wants to visualise the attention weights of a model with attenion, the "-visualiseAttention" flag  must be set. When this flag is set, the program will not make predictions over the test data set. 
     </p>
@@ -160,6 +163,12 @@
     To visualise the text confidence of a saved attention model, run the command 'python3 test.py -loadModel -addAttention -visualiseTextConfidence'.<br/>
     <h5>Visualise the text confidence for a recurrent neural network  with non-attention based seq2seq model for transliteration task</h5>
     To visualise the text confidence of a saved non-attention model, run the command 'python3 test.py -loadModel -visualiseTextConfidence' or 'python3 test.py -loadModel -visualiseTextAttention'.<br/>
+  </p>
+  <h5>To plot confusion maps for the test data</h5>
+  <p>
+    Run the following command to generate confusion heatmaps and (number of corrections reequired) vs (number of test instances) plot: <br/>
+    "python3 test.py -loadModel -plotConfusion" <br/>
+    Note: Use the "-addAttention" flag for attention-based model.
   </p>
   <h5>Run a sweep</h5>
   <p>
