@@ -1,5 +1,3 @@
-# cs6910_assignment3
-<h1>CS6910 Assignment 3</h1>
 <h1>Recurrent Neural Network based seq2seq model for transliteration task</h1>
 <h3>Team Members</h3>
   <ol>
